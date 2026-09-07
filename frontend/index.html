@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyber">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>WeatherGPT - Ministry of Earth Sciences (MoES) & IMD | Conversational Meteorological Intelligence</title>
+    <meta name="description" content="WeatherGPT: AI-powered conversational platform for real-time weather forecasting, numerical weather prediction (GFS/WRF/ECMWF), early disaster alerts, satellite GIS radar, and climate analysis by MoES & IMD.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet GIS Map Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/styles.css?v=3.7.0_drawer">
+</head>
+<body>
+
+    <!-- Glowing Ambient Aurora Mesh for True Glassmorphism Refraction -->
+    <div class="glass-ambient-container" aria-hidden="true">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+        <div class="ambient-orb orb-4"></div>
+    </div>
+
+    <!-- App Header & Navigation Bar (Single Line Executive Glass Bar) -->
+    <header class="app-header">
+        <div class="header-left">
+            <!-- Master Drawer Navigation Button -->
+            <button class="drawer-toggle-btn" id="appDrawerBtn" aria-label="Open Navigation Menu" title="Open Navigation Menu">
+                <span class="drawer-btn-icon">☰</span>
+                <span class="drawer-btn-label">Menu</span>
+            </button>
+
+            <!-- Brand Logo & Single-Line Telemetry -->
+            <div class="brand-group">
+                <div class="brand-logo-badge" id="brandLogoBadge" title="WeatherGPT Meteorological System">🌐</div>
+                <!-- App Name, Ministry Badge, Live Station, Time, Date and Day ALL IN ONE SINGLE LINE -->
+                <div class="header-single-line">
+                    <h1 class="brand-title">Weather<span class="highlight">GPT</span></h1>
+                    <span class="badge-govt">MoES · IMD</span>
+                    <span class="header-divider">•</span>
+                    <div class="live-station-pill" id="stationStatusBadge">
+                        <span class="pulse-dot"></span>
+                        <span>AWS Live</span>
+                    </div>
+                    <span class="header-divider">•</span>
+                    <div class="live-time-inline" id="liveTimeIst">--:--:-- IST • ---, -- --- ----</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: Current Active View Pill -->
+        <div class="current-view-pill" id="currentViewBadge" title="Current View (Click Menu to Switch)">
+            <span class="view-pill-icon" id="headerViewIcon">📊</span>
+            <span class="view-pill-text" id="headerViewLabel">Dashboard</span>
+        </div>
+
+        <!-- Right Header Actions -->
+        <div class="header-actions">
+            <!-- 11 Indian Languages Selector -->
+            <div class="lang-selector-wrap" title="Select Indian Language">
+                <span class="lang-icon">🌐</span>
+                <select id="languageSelect" aria-label="Select Language">
+                    <option value="en">English (India)</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="mr">मराठी (Marathi)</option>
+                    <option value="gu">ગુજરાતી (Gujarati)</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    <option value="ml">മലയാളം (Malayalam)</option>
+                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                </select>
+            </div>
+
+            <!-- Voice TTS Readout Toggle -->
+            <button class="action-icon-btn" id="ttsToggleBtn" title="Audio Readout Enabled" aria-label="Toggle Voice Readout">🔊</button>
+            
+            <!-- Personalize & Customize Button -->
+            <button class="action-pill-btn" id="openPersonalizeBtn" title="Personalize & Customize Theme, Units, and Dashboard" aria-label="Personalize">
+                <span>🎨</span>
+                <span class="btn-text-desktop" data-i18n="menuPersonalize">Personalize</span>
+            </button>
+
+            <!-- Settings Button -->
+            <button class="action-pill-btn" id="openAiSettingsBtn" title="AI Model & Engine Settings (Gemini / Groq / OpenAI)" aria-label="AI Model Settings">
+                <span>⚙️</span>
+                <span class="btn-text-desktop" data-i18n="menuSettings">Settings</span>
+            </button>
+
+            <!-- User Auth / Profile Badge -->
+            <div class="auth-wrapper" id="authWrapper">
+                <!-- Logged-out button -->
+                <button class="auth-btn-primary" id="openSignInBtn" aria-label="Sign In or Register">
+                    <span>👤</span>
+                    <span data-i18n="menuSignIn">Sign In</span>
+                </button>
+
+                <!-- Logged-in user badge & dropdown -->
+                <div class="user-badge-container" id="userBadgeContainer" style="display: none;">
+                    <button class="user-pill-btn" id="userPillBtn" aria-haspopup="true" aria-expanded="false">
+                        <div class="user-avatar-circle" id="headerUserAvatar">U</div>
+                        <div class="user-text-meta">
+                            <span class="user-display-name" id="headerUserName">Guest</span>
+                            <span class="user-role-tag" id="headerUserRole">Citizen</span>
+                        </div>
+                        <span class="chevron-icon">▾</span>
+                    </button>
+
+                    <!-- Dropdown Popover -->
+                    <div class="user-dropdown-popover" id="userDropdownPopover" role="menu">
+                        <div class="popover-user-card">
+                            <div class="popover-avatar-lg" id="dropdownAvatar">U</div>
+                            <div class="popover-info">
+                                <strong id="dropdownName">User</strong>
+                                <span class="popover-role" id="dropdownRoleLabel">Citizen / General</span>
+                                <span class="popover-email" id="dropdownEmail">user@weathergpt.in</span>
+                            </div>
+                        </div>
+                        <div class="popover-divider"></div>
+                        <button class="popover-item" id="dropdownActionPersonalize" role="menuitem">
+                            <span class="popover-item-icon">🎨</span>
+                            <span data-i18n="customizeTitle">Personalize UI & Themes</span>
+                        </button>
+                        <button class="popover-item" id="dropdownActionSettings" role="menuitem">
+                            <span class="popover-item-icon">⚙️</span>
+                            <span data-i18n="menuSettings">AI & Engine Settings</span>
+                        </button>
+                        <button class="popover-item" id="dropdownActionFavorites" role="menuitem">
+                            <span class="popover-item-icon">⭐</span>
+                            <span data-i18n="favoriteCities">Manage Favorite Cities</span>
+                        </button>
+                        <div class="popover-divider"></div>
+                        <button class="popover-item logout-item" id="userLogoutBtn" role="menuitem">
+                            <span class="popover-item-icon">🚪</span>
+                            <span data-i18n="menuLogout">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle Button (compat) -->
+            <button class="hamburger-btn" id="mobileMenuBtn" aria-label="Open Menu" aria-expanded="false" aria-controls="mobileDrawerOverlay">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =======================================================================
+         MASTER SLIDE-OUT NAVIGATION DRAWER (Frosted Glassmorphism)
+         ======================================================================= -->
+    <div class="mobile-drawer-overlay nav-drawer-overlay" id="mobileDrawerOverlay" aria-hidden="true">
+        <aside class="mobile-drawer nav-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Application Navigation Menu">
+            <div class="mobile-drawer-header drawer-header">
+                <div class="brand-group">
+                    <div class="brand-logo-badge">🌐</div>
+                    <div class="brand-text">
+                        <h2 class="brand-title">Weather<span class="highlight">GPT</span> <span class="badge-govt">MoES · IMD</span></h2>
+                        <span class="drawer-header-sub">Meteorological Intelligence Suite</span>
+                    </div>
+                </div>
+                <button class="modal-close-btn drawer-close-btn" id="closeMobileDrawerBtn" aria-label="Close Menu">&times;</button>
+            </div>
+
+            <!-- Section 1: Main App Views -->
+            <div class="drawer-nav-section-title">MAIN NAVIGATION</div>
+            <nav class="mobile-drawer-nav drawer-nav-list" aria-label="Main Navigation">
+                <button class="mobile-nav-item drawer-nav-card active" data-view="dashboard" id="drawerNavDashboard">
+                    <span class="drawer-card-icon">📊</span>
+                    <div class="drawer-card-info">
+                        <span class="drawer-card-title" data-i18n="navDashboard">Dashboard</span>
+                        <span class="drawer-card-desc">Live AWS Telemetry, AQI, Rain &amp; 7-Day Forecast</span>
+                    </div>
+                    <span class="drawer-card-active-dot"></span>
+                </button>
+                <button class="mobile-nav-item drawer-nav-card" data-view="map" id="drawerNavMap">
+                    <span class="drawer-card-icon">🛰️</span>
+                    <div class="drawer-card-info">
+                        <span class="drawer-card-title" data-i18n="navMap">Live Map &amp; Radar</span>
+                        <span class="drawer-card-desc">Doppler Radar, Satellite Cloud Mosaic &amp; Cyclone Tracks</span>
+                    </div>
+                    <span class="drawer-card-active-dot"></span>
+                </button>
+                <button class="mobile-nav-item drawer-nav-card" data-view="chat" id="drawerNavChat">
+                    <span class="drawer-card-icon">🤖</span>
+                    <div class="drawer-card-info">
+                        <span class="drawer-card-title" data-i18n="navWeatherGPT">WeatherGPT AI Studio</span>
+                        <span class="drawer-card-desc">Multi-Model Advisory (Groq, Gemini, OpenAI, Claude)</span>
+                    </div>
+                    <span class="drawer-card-active-dot"></span>
+                </button>
+                <button class="mobile-nav-item drawer-nav-card" data-view="climate" id="drawerNavClimate">
+                    <span class="drawer-card-icon">📈</span>
+                    <div class="drawer-card-info">
+                        <span class="drawer-card-title" data-i18n="navClimate">Climate Trends</span>
+                        <span class="drawer-card-desc">50-Year Decadal Warming, Extremes &amp; Monsoon Indices</span>
+                    </div>
+                    <span class="drawer-card-active-dot"></span>
+                </button>
+            </nav>
+
+            <!-- Section 2: Preferences & Settings -->
+            <div class="drawer-nav-section-title">PREFERENCES &amp; TOOLS</div>
+            <div class="drawer-tools-grid">
+                <a href="/download/WeatherGPT.exe" class="drawer-action-btn" download style="text-decoration: none; border-color: rgba(0, 240, 255, 0.35);" id="drawerDownloadAppBtn" title="Download standalone WeatherGPT.exe">
+                    <span class="drawer-tool-icon">📥</span>
+                    <div class="drawer-tool-text">
+                        <strong>Download Windows App (.exe)</strong>
+                        <span style="color: var(--accent-cyan);">v3.7.0 • 19.4 MB • Standalone</span>
+                    </div>
+                </a>
+                <a href="/landing" class="drawer-action-btn" style="text-decoration: none;" id="drawerShowcaseBtn" title="Open product showcase landing page">
+                    <span class="drawer-tool-icon">🌐</span>
+                    <div class="drawer-tool-text">
+                        <strong>Product Showcase &amp; Specs</strong>
+                        <span>Features, Radar &amp; Quick Start</span>
+                    </div>
+                </a>
+                <button class="drawer-action-btn" id="drawerOpenPersonalizeBtn">
+                    <span class="drawer-tool-icon">🎨</span>
+                    <div class="drawer-tool-text">
+                        <strong>Personalize UI</strong>
+                        <span>Themes, Units &amp; Density</span>
+                    </div>
+                </button>
+                <button class="drawer-action-btn" id="drawerOpenAiSettingsBtn">
+                    <span class="drawer-tool-icon">⚙️</span>
+                    <div class="drawer-tool-text">
+                        <strong>AI &amp; Models</strong>
+                        <span>API Keys &amp; Engines</span>
+                    </div>
+                </button>
+                <button class="drawer-action-btn" id="drawerTtsToggleBtn">
+                    <span class="drawer-tool-icon">🔊</span>
+                    <div class="drawer-tool-text">
+                        <strong>Voice Readout</strong>
+                        <span>Toggle Audio TTS</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Section 3: Indian Languages -->
+            <div class="drawer-nav-section-title">REGIONAL LANGUAGE</div>
+            <div class="drawer-lang-section">
+                <div class="lang-selector-wrap drawer-lang-selector">
+                    <span class="lang-icon">🌐</span>
+                    <select id="drawerLanguageSelect" aria-label="Select Language">
+                        <option value="en">English (India)</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section 4: User Account -->
+            <div class="drawer-nav-section-title">ACCOUNT &amp; PROFILE</div>
+            <div class="mobile-drawer-actions">
+                <button class="drawer-action-btn drawer-signin-btn" id="drawerSignInBtn">
+                    <span>👤</span>
+                    <span data-i18n="menuSignIn">Sign In / Register</span>
+                </button>
+
+                <div class="drawer-user-box" id="drawerUserBox" style="display: none;">
+                    <div class="popover-user-card">
+                        <div class="popover-avatar-lg" id="drawerUserAvatar">U</div>
+                        <div class="popover-info">
+                            <strong id="drawerUserName">User</strong>
+                            <span class="popover-role" id="drawerUserRole">Citizen</span>
+                        </div>
+                    </div>
+                    <button class="drawer-action-btn drawer-logout-btn" id="drawerLogoutBtn">
+                        <span>🚪</span>
+                        <span data-i18n="menuLogout">Logout</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Telemetry Footer Card -->
+            <div class="drawer-footer-card">
+                <div class="drawer-footer-status">
+                    <span class="pulse-dot"></span>
+                    <span>IMD Observatories • 100% Operational</span>
+                </div>
+                <div class="drawer-footer-sub">MoES WeatherGPT Met-AI Engine v3.7</div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Disaster Alert Ticker -->
+    <section class="alert-ticker-container" id="alertTickerSection" aria-label="Weather Warnings">
+        <span class="alert-ticker-label">IMD WARNINGS</span>
+        <div class="alert-ticker-content" id="alertTickerContent">
+            <span>🟢 No severe weather warnings in effect. Meteorological parameters normal.</span>
+        </div>
+    </section>
+
+    <!-- Emergency Disaster Banner (Active on RED/ORANGE alert) -->
+    <div class="disaster-banner" id="disasterWarningBanner" style="display: none;"></div>
+
+    <!-- MAIN APPLICATION VIEWS -->
+    <main class="main-content-viewport">
+
+        <!-- ===================================================================
+             VIEW 1: DASHBOARD (OVERVIEW)
+             =================================================================== -->
+        <section class="view-container active" id="viewDashboard" aria-label="Meteorological Dashboard">
+            <!-- Global Search & Location Bar -->
+            <div class="search-section">
+                <div class="search-bar-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="citySearchInput" placeholder="Search Indian city, district, or PIN (e.g., New Delhi, Mumbai, Bhubaneswar, Shimla)..." aria-label="Search city" />
+                    <button class="search-btn" id="citySearchBtn">Search</button>
+                </div>
+
+                <button class="gps-btn" id="detectGpsBtn" title="Detect and track your real current location">
+                    <span>📍</span> My Location
+                </button>
+
+                <!-- Quick Favorite Cities -->
+                <div class="city-chips-wrapper">
+                    <span class="chips-label">⭐ Favorites:</span>
+                    <div class="city-chips-container" id="quickCityChips">
+                        <span class="city-chip" data-city="New Delhi">New Delhi</span>
+                        <span class="city-chip" data-city="Mumbai">Mumbai</span>
+                        <span class="city-chip" data-city="Kolkata">Kolkata</span>
+                        <span class="city-chip" data-city="Chennai">Chennai</span>
+                        <span class="city-chip" data-city="Bengaluru">Bengaluru</span>
+                        <span class="city-chip" data-city="Bhubaneswar">Bhubaneswar (Cyclone Watch)</span>
+                        <span class="city-chip" data-city="Shimla">Shimla (Hills)</span>
+                        <span class="city-chip" data-city="Guwahati">Guwahati (NE)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persona Selector Bar -->
+            <nav class="persona-selector-bar" aria-label="Domain Perspectives">
+                <button class="persona-tab active" data-persona="farmer" id="tabPersonaFarmer" data-i18n="personaFarmer">🌾 Agriculture (GKMS)</button>
+                <button class="persona-tab" data-persona="aviation" id="tabPersonaAviation" data-i18n="personaAviation">✈️ Aviation (METAR)</button>
+                <button class="persona-tab" data-persona="marine" id="tabPersonaMarine" data-i18n="personaMarine">⚓ Marine & Coastal</button>
+                <button class="persona-tab" data-persona="smart_city" id="tabPersonaCity" data-i18n="personaCity">🏙️ Smart City Disaster</button>
+            </nav>
+
+            <!-- Dashboard 2-Column Responsive Layout -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Primary Telemetry & Air Quality -->
+                <div class="dashboard-column-left">
+                    <!-- Current Weather Hero Card -->
+                    <article class="glass-panel" id="currentWeatherCard">
+                        <div class="panel-header">
+                            <h2 class="panel-title" data-i18n="liveTelemetry">📡 Real-Time Telemetry</h2>
+                            <div class="panel-header-badges">
+                                <span class="status-pill-live">● AUTOMATED AWS</span>
+                            </div>
+                        </div>
+
+                        <div class="current-weather-hero">
+                            <div class="hero-temp-group">
+                                <div class="city-label-row">
+                                    <h3 class="city-label" id="currCityName">New Delhi, Delhi</h3>
+                                    <button class="pin-favorite-btn" id="pinCurrentCityBtn" title="Pin/Unpin city to favorites">⭐</button>
+                                </div>
+                                <div class="station-id" id="currStationId">Station: IMD_DEL_01 (Elev. 216m)</div>
+                                <div class="temp-row">
+                                    <div class="temp-num" id="currTemp">28°</div>
+                                    <div class="feels-like-box">
+                                        <div class="feels-like" id="currFeelsLike">Feels like: 30°C</div>
+                                        <div class="units-toggle-pill" id="quickUnitToggle" title="Toggle °C / °F">°C | °F</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hero-icon-group">
+                                <div class="weather-icon-large" id="currWeatherIcon">🌤️</div>
+                                <div class="condition-text" id="currConditionText">Partly Cloudy</div>
+                            </div>
+                        </div>
+
+                        <!-- 6 Core Telemetry Metric Cards -->
+                        <div class="telemetry-grid">
+                            <div class="telemetry-cell">
+                                <div class="telemetry-cell-icon">💧</div>
+                                <div class="telemetry-cell-data">
+                                    <div class="label" data-i18n="humidity">Humidity</div>
+                                    <div class="value" id="currHumidity">58%</div>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-cell">
+                                <div class="telemetry-cell-icon">⏱️</div>
+                                <div class="telemetry-cell-data">
+                                    <div class="label" data-i18n="pressure">Pressure</div>
+                                    <div class="value" id="currPressure">1012 hPa</div>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-cell">
+                                <div class="telemetry-cell-icon">💨</div>
+                                <div class="telemetry-cell-data">
+                                    <div class="label" data-i18n="wind">Wind</div>
+                                    <div class="value"><span id="currWind">14 km/h</span> <span id="currWindDir" style="display: inline-block;">↑</span></div>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-cell">
+                                <div class="telemetry-cell-icon">☀️</div>
+                                <div class="telemetry-cell-data">
+                                    <div class="label" data-i18n="uvIndex">UV Index</div>
+                                    <div class="value" id="currUv">5.4 (Mod)</div>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-cell">
+                                <div class="telemetry-cell-icon">☁️</div>
+                                <div class="telemetry-cell-data">
+                                    <div class="label" data-i18n="cloudCover">Cloud Cover</div>
+                                    <div class="value" id="currCloud">25%</div>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-cell">
+                                <div class="telemetry-cell-icon">🌧️</div>
+                                <div class="telemetry-cell-data">
+                                    <div class="label" data-i18n="precipitation">Precipitation</div>
+                                    <div class="value" id="currPrecipitation">0.0 mm</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CPCB National AQI Box -->
+                        <div class="aqi-box">
+                            <div class="aqi-header">
+                                <div class="aqi-title-group">
+                                    <span class="aqi-main-title" data-i18n="aqiTitle">CPCB Air Quality Index</span>
+                                    <span class="aqi-sub">Indian National Standard</span>
+                                </div>
+                                <div class="aqi-val-pill">
+                                    <span class="aqi-number" id="currAqiValue">85</span>
+                                    <span class="aqi-category-badge" id="currAqiCategory" style="background-color: #84cc16;">Satisfactory</span>
+                                </div>
+                            </div>
+                            <div class="aqi-spectrum-bar-wrap" title="CPCB Indian AQI Standard: 0 (Good) to 500 (Severe)">
+                                <div class="aqi-spectrum-track">
+                                    <div class="aqi-spectrum-indicator" id="aqiSpectrumIndicator" style="left: 17%;"></div>
+                                </div>
+                                <div class="aqi-spectrum-labels">
+                                    <span>0 Good</span>
+                                    <span style="color: #84cc16;">Satisfactory</span>
+                                    <span style="color: #f59e0b;">Moderate</span>
+                                    <span style="color: #ef4444;">Poor</span>
+                                    <span style="color: #7f1d1d;">500 Severe</span>
+                                </div>
+                            </div>
+                            <div class="aqi-health-text" id="currAqiHealth">Minor breathing discomfort to sensitive people.</div>
+                            <div class="aqi-pollutants-row">
+                                <span>PM2.5: <strong id="currPm25">34 µg/m³</strong></span>
+                                <span>PM10: <strong id="currPm10">78 µg/m³</strong></span>
+                                <span>Govt Agency: CPCB MoEFCC</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Quick WeatherGPT Assistant Launch Card -->
+                    <article class="glass-panel chat-quick-card">
+                        <div class="panel-header">
+                            <div class="panel-title-with-avatar">
+                                <span class="avatar-glow">🤖</span>
+                                <div>
+                                    <h2 class="panel-title">WeatherGPT Intelligence</h2>
+                                    <p class="panel-subtitle">Conversational reasoning for weather & agricultural decisions</p>
+                                </div>
+                            </div>
+                            <button class="panel-action-btn primary" id="launchFullChatBtn">Open AI Studio ➤</button>
+                        </div>
+                        <div class="quick-ask-row">
+                            <input type="text" id="quickAskInput" placeholder="Ask anything about rain, farming, flights, or cyclones..." aria-label="Quick Ask WeatherGPT" />
+                            <button class="quick-ask-send-btn" id="quickAskSendBtn">Ask</button>
+                        </div>
+                        <div class="quick-ask-prompts">
+                            <span class="quick-ask-tag" data-query="Will it rain tomorrow in this city?">🌧️ Rain forecast</span>
+                            <span class="quick-ask-tag" data-query="Can I spray pesticide on wheat today?">🌾 Spray window</span>
+                            <span class="quick-ask-tag" data-query="What is the active cyclone status in Bay of Bengal?">🌀 Cyclone update</span>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Right Column: Forecast Charts, NWP Models & Domain Advisories -->
+                <div class="dashboard-column-right">
+                    <!-- 24-Hour Forecast Chart -->
+                    <article class="glass-panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title" data-i18n="hourlyForecast">⏱️ 24-Hour Hourly Forecast</h2>
+                            <span class="chart-badge">Temperature (°C) & Rain Probability (%)</span>
+                        </div>
+                        <div class="chart-container-wrap">
+                            <canvas id="hourlyChartCanvas"></canvas>
+                        </div>
+                    </article>
+
+                    <!-- 7-Day Extended Outlook -->
+                    <article class="glass-panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title" data-i18n="sevenDayOutlook">📅 7-Day Extended Outlook</h2>
+                            <span class="panel-note">IMD Multi-Ensemble Guidance</span>
+                        </div>
+                        <div class="daily-cards-row" id="dailyOutlookCards">
+                            <!-- Injected dynamically by app.js -->
+                        </div>
+                    </article>
+
+                    <!-- NWP Multi-Model Comparison Card -->
+                    <article class="glass-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title" data-i18n="nwpTitle">🌐 NWP Multi-Model Comparison</h2>
+                                <span class="panel-subtitle">GFS (0.25°) vs WRF (3km) vs ECMWF (9km)</span>
+                            </div>
+                            <span class="consensus-badge" id="nwpConsensusScore">92% Match</span>
+                        </div>
+
+                        <div class="nwp-metrics-grid">
+                            <div class="nwp-metric-box">
+                                <div class="title" data-i18n="modelConfidence">Model Consensus</div>
+                                <div class="stat" id="nwpConsensusLabel">High Confidence</div>
+                                <div class="desc" id="nwpConsensusDesc">GFS and WRF converge on precipitation trajectory.</div>
+                            </div>
+
+                            <div class="nwp-metric-box">
+                                <div class="title" data-i18n="capeIndex">Convective CAPE</div>
+                                <div class="stat" id="nwpMaxCape">1240 J/kg</div>
+                                <div class="desc" id="nwpCapeRisk" style="color: #f59e0b;">Moderate Convection</div>
+                            </div>
+                        </div>
+
+                        <div class="models-rain-compare-row">
+                            <span>GFS 0.25°: <strong id="gfsRain">2.4 mm</strong></span>
+                            <span>WRF 3km: <strong id="wrfRain">3.1 mm</strong></span>
+                            <span>ECMWF: <strong id="ecmwfRain">2.8 mm</strong></span>
+                        </div>
+
+                        <div class="nwp-chart-wrap">
+                            <canvas id="nwpChartCanvas"></canvas>
+                        </div>
+                    </article>
+
+                    <!-- Domain Advisory Container -->
+                    <article class="glass-panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title" data-i18n="advisories">📋 Specialized Domain Advisory</h2>
+                            <span class="panel-note">Tailored for Selected Persona</span>
+                        </div>
+                        <div id="personaAdvisoryContent">
+                            <!-- Dynamically populated based on active persona tab -->
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ===================================================================
+             VIEW 2: LIVE SATELLITE GIS & RADAR MAP
+             =================================================================== -->
+        <section class="view-container" id="viewMap" aria-label="Interactive GIS Weather Map">
+            <div class="map-view-layout">
+                <!-- Map Header Controls -->
+                <div class="map-top-bar glass-panel">
+                    <div class="map-bar-left">
+                        <div class="map-title-wrap">
+                            <h2 class="panel-title" data-i18n="gisMapTitle">🛰️ Interactive Meteorological GIS & Doppler Radar</h2>
+                            <p class="map-subtext">Real-time ESRI Satellite Imagery, RainViewer Doppler Radar, IMD Observatories & Cyclone Tracking</p>
+                        </div>
+                    </div>
+
+                    <div class="map-bar-controls">
+                        <!-- Base Layer Selector -->
+                        <div class="map-view-switcher">
+                            <button class="map-base-btn active" data-layer="satellite" onclick="window.WeatherApp.gisMap.setBaseLayer('satellite')">🛰️ Satellite</button>
+                            <button class="map-base-btn" data-layer="dark" onclick="window.WeatherApp.gisMap.setBaseLayer('dark')">🌌 Dark Matter</button>
+                            <button class="map-base-btn" data-layer="streets" onclick="window.WeatherApp.gisMap.setBaseLayer('streets')">🗺️ Streets</button>
+                        </div>
+
+                        <!-- Cyclone Bulletin Trigger -->
+                        <button class="panel-action-btn warning" id="viewCycloneDetailsBtn">🌀 RSMC Bulletin</button>
+                    </div>
+                </div>
+
+                <!-- Floating Layer Toggles Bar -->
+                <div class="map-layer-floating-bar">
+                    <button class="map-layer-toggle active" id="toggleLiveRadarBtn" onclick="window.WeatherApp.gisMap.toggleLayer('radar')">📡 Live Doppler Radar</button>
+                    <button class="map-layer-toggle active" id="toggleUserLocationBtn" onclick="window.WeatherApp.gisMap.toggleLayer('userLocation')">📍 My Location Pin</button>
+                    <button class="map-layer-toggle active" id="toggleObservatoriesBtn" onclick="window.WeatherApp.gisMap.toggleLayer('stations')">🏢 IMD Observatories</button>
+                    <button class="map-layer-toggle active" id="toggleCycloneBtn" onclick="window.WeatherApp.gisMap.toggleLayer('cyclone')">🌀 Storm 'VARUNA'</button>
+                    <button class="map-layer-toggle" id="clickMapHintBtn" style="border-color: #10b981; color: #10b981;" onclick="window.WeatherApp.showToast('Click anywhere on the satellite map or drag the green pin to set your exact location!', '🎯')">🎯 Click Map to Pinpoint</button>
+                </div>
+
+                <!-- Leaflet Canvas Wrap -->
+                <div class="map-canvas-container">
+                    <div id="gisMapCanvas" role="region" aria-label="Interactive Weather Map"></div>
+                    
+                    <!-- Floating Legend -->
+                    <div class="map-floating-legend glass-panel" id="radarLegendCard">
+                        <div class="legend-header"><strong>Radar dBZ</strong></div>
+                        <div class="legend-scale-bar"></div>
+                        <div class="legend-scale-labels">
+                            <span>15 (Light)</span>
+                            <span>35 (Moderate)</span>
+                            <span>55+ (Heavy/Hail)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ===================================================================
+             VIEW 3: WEATHERGPT CONVERSATIONAL AI STUDIO
+             =================================================================== -->
+        <section class="view-container" id="viewWeatherGPT" aria-label="WeatherGPT Conversational AI Studio">
+            <div class="chat-studio-layout glass-panel">
+                <!-- Chat Studio Top Bar -->
+                <div class="chat-header">
+                    <div class="chat-title-group">
+                        <div class="ai-avatar-pulse" id="activeAiAvatar">🌐</div>
+                        <div class="ai-meta">
+                            <div class="ai-title-row">
+                                <h2 class="chat-main-title" data-i18n="chatTitle">WeatherGPT Met-AI Studio</h2>
+                                <span class="ai-active-model-tag" id="activeModelTag">MoES Met-Brain</span>
+                            </div>
+                            <p class="chat-subtitle" data-i18n="chatSubtitle">Conversational Intelligence for Weather, Cyclones, Agriculture & Climate</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-header-actions">
+                        <button class="ai-engine-badge" id="aiEngineStatusBadge" title="Click to configure AI Provider & Model" onclick="document.getElementById('openAiSettingsBtn').click()">
+                            🌐 MoES Met-AI Core (Free)
+                        </button>
+                        <button class="clear-chat-btn" id="clearChatBtn" title="Clear Conversation">🗑️ Clear</button>
+                    </div>
+                </div>
+
+                <!-- AI Provider Quick Switcher Bar -->
+                <div class="ai-provider-quickbar" id="aiProviderQuickBar" aria-label="Select AI Model">
+                    <button class="provider-pill active" data-provider="builtin" title="Built-in MoES Neural Engine (Offline & Free)">🌐 Built-in</button>
+                    <button class="provider-pill" data-provider="groq" title="Groq Llama-3.3 70B (Fast)">⚡ Groq</button>
+                    <button class="provider-pill" data-provider="gemini" title="Google Gemini 3.6 Flash">✨ Gemini</button>
+                    <button class="provider-pill" data-provider="openrouter" title="OpenRouter Universal Gateway">🔀 OpenRouter</button>
+                    <button class="provider-pill" data-provider="openai" title="OpenAI GPT-4o-mini">🧠 OpenAI</button>
+                    <button class="provider-pill" data-provider="anthropic" title="Anthropic Claude 3.5 Sonnet">🤖 Claude</button>
+                    <button class="provider-pill" data-provider="deepseek" title="DeepSeek-V3 Chat">🔮 DeepSeek</button>
+                    <button class="provider-pill" data-provider="mistral" title="Mistral AI Small">🌊 Mistral</button>
+                </div>
+
+                <!-- Chat Message Stream -->
+                <div class="chat-messages-scroll" id="chatMessages" role="log" aria-live="polite">
+                    <div class="chat-bubble assistant">
+                        <div class="chat-bubble-header">
+                            <span class="chat-avatar">🌐</span> <strong>WeatherGPT (MoES Met-AI)</strong>
+                        </div>
+                        <div class="chat-bubble-body">
+                            Namaste! I am <strong>WeatherGPT</strong>, your specialized conversational intelligence platform for meteorological advisory, integrated with India Meteorological Department (IMD) observation networks, Numerical Weather Prediction (GFS/WRF) models, and disaster warning systems.
+                            <br/><br/>
+                            You can ask questions in <strong>English, Hindi, Bengali, Tamil, Telugu</strong>, and 6 other Indian languages:
+                            <ul>
+                                <li><em>"Will it rain in Delhi tomorrow?"</em></li>
+                                <li><em>"What is the cyclone alert status along Odisha coast?"</em></li>
+                                <li><em>"Can I spray pesticide on wheat in Punjab this week?"</em></li>
+                                <li><em>"Show 50-year climate trends for Indian summer monsoon."</em></li>
+                            </ul>
+                        </div>
+                        <div class="chat-bubble-actions">
+                            <button class="speech-replay-btn" onclick="window.WeatherApp.chat.speak('Welcome to WeatherGPT. You can ask for live forecasts, cyclone alerts, farming advisories, or climate trends in your preferred language.')">🔊 Read Aloud</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Prompt Chips -->
+                <div class="quick-prompt-chips-bar">
+                    <button class="prompt-chip" data-query="What is the active cyclone warning status in the Bay of Bengal?">🌀 Cyclone Alert Status</button>
+                    <button class="prompt-chip" data-query="Give me agricultural GKMS crop and pesticide spraying advice for this location">🌾 Farmer Spray Window</button>
+                    <button class="prompt-chip" data-query="Show aviation METAR briefing and runway flight categories">✈️ Aviation METAR</button>
+                    <button class="prompt-chip" data-query="Compare GFS, WRF, and ECMWF numerical weather prediction models">🌐 Compare NWP Models</button>
+                    <button class="prompt-chip" data-query="What are the 50-year historical climate and monsoon trends?">📈 Climate Trends</button>
+                </div>
+
+                <!-- Chat Input Row -->
+                <div class="chat-input-row">
+                    <button class="chat-mic-btn" id="chatMicBtn" title="Click mic to speak query (Speech to text)" aria-label="Microphone Voice Input">🎙️</button>
+                    <input type="text" id="chatInput" placeholder="Ask WeatherGPT in English or Indian languages..." aria-label="Type meteorological query" />
+                    <button class="chat-send-btn" id="chatSendBtn" title="Send message" aria-label="Send query">➤</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ===================================================================
+             VIEW 4: CLIMATE TRENDS (50-YEAR HISTORICAL ANALYSIS)
+             =================================================================== -->
+        <section class="view-container" id="viewClimate" aria-label="50-Year Climate Analysis">
+            <div class="climate-view-layout">
+                <div class="glass-panel climate-main-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">📈 50-Year Historical Climate Analysis (1975–2025)</h2>
+                            <p class="panel-subtitle">ERA5 Atmospheric Reanalysis & India Meteorological Department (IMD) High-Resolution Gridded Data</p>
+                        </div>
+                        <button class="panel-action-btn primary" id="refreshClimateBtn">↻ Refresh Analysis</button>
+                    </div>
+
+                    <div class="climate-stats-summary" id="climateSummaryText">
+                        Analyzing ERA5 reanalysis and IMD gridded telemetry...
+                    </div>
+
+                    <div class="climate-charts-grid">
+                        <div class="climate-chart-container">
+                            <h3 class="chart-section-title">Decadal Surface Temperature Anomaly (°C Departure from 1975 Baseline)</h3>
+                            <div class="modal-chart-wrap">
+                                <canvas id="climateChartCanvas"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="climate-insights-cards">
+                            <div class="insight-card">
+                                <div class="insight-icon">🌡️</div>
+                                <div class="insight-data">
+                                    <div class="insight-title">Decadal Warming Rate</div>
+                                    <div class="insight-value">+0.23°C / Decade</div>
+                                    <div class="insight-desc">Cumulative warming across the Indian subcontinent has reached +1.14°C since 1975.</div>
+                                </div>
+                            </div>
+
+                            <div class="insight-card">
+                                <div class="insight-icon">🌧️</div>
+                                <div class="insight-data">
+                                    <div class="insight-title">Extreme Rainfall Frequency</div>
+                                    <div class="insight-value">+48% Increase</div>
+                                    <div class="insight-desc">Days with &gt;100mm precipitation have increased substantially across central India and western ghats.</div>
+                                </div>
+                            </div>
+
+                            <div class="insight-card">
+                                <div class="insight-icon">🌊</div>
+                                <div class="insight-data">
+                                    <div class="insight-title">ENSO & Ocean Teleconnection</div>
+                                    <div class="insight-value" id="ensoStatusText">Neutral / La Niña</div>
+                                    <div class="insight-desc">Equatorial Pacific Niño 3.4 SST index indicates favorable conditions for Indian monsoon rainfall.</div>
+                                </div>
+                            </div>
+
+                            <div class="insight-card">
+                                <div class="insight-icon">📅</div>
+                                <div class="insight-data">
+                                    <div class="insight-title">Southwest Monsoon Onset</div>
+                                    <div class="insight-value" id="monsoonOnsetText">June 1st Baseline</div>
+                                    <div class="insight-desc">Kerala landfall normal date: June 1 ± 4 days. Northern limit progression remains steady.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =======================================================================
+         MOBILE BOTTOM NAVIGATION BAR (App-Style Quick Switching)
+         ======================================================================= -->
+    <nav class="bottom-nav-bar" id="bottomNavBar" aria-label="Main Navigation">
+        <button class="bottom-nav-item active" data-view="dashboard">
+            <span class="bottom-nav-icon">📊</span>
+            <span class="bottom-nav-label">Home</span>
+        </button>
+        <button class="bottom-nav-item" data-view="map">
+            <span class="bottom-nav-icon">🛰️</span>
+            <span class="bottom-nav-label">Radar</span>
+        </button>
+        <button class="bottom-nav-item" data-view="chat">
+            <span class="bottom-nav-icon">🤖</span>
+            <span class="bottom-nav-label">AI Chat</span>
+        </button>
+        <button class="bottom-nav-item" data-view="climate">
+            <span class="bottom-nav-icon">📈</span>
+            <span class="bottom-nav-label">Climate</span>
+        </button>
+    </nav>
+
+
+    <!-- =======================================================================
+         MODALS, DRAWERS & DIALOGS
+         ======================================================================= -->
+
+    <!-- 1. PERSONALIZE & CUSTOMIZE DRAWER -->
+    <div class="modal-overlay" id="personalizeModal" aria-hidden="true" role="dialog" aria-labelledby="personalizeModalTitle">
+        <div class="modal-content drawer-content">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-title-icon">🎨</span>
+                    <div>
+                        <h3 id="personalizeModalTitle" data-i18n="customizeTitle">Personalize & Customize</h3>
+                        <p class="modal-subtitle">Customize themes, measurement units, favorites, and view preferences</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="closePersonalizeModalBtn" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Theme Selection -->
+                <div class="customizer-section">
+                    <h4 class="customizer-heading"><span>🎨</span> Select Color Theme</h4>
+                    <p class="customizer-desc">Choose a rich glassmorphic color palette tailored for your eyes.</p>
+                    
+                    <div class="theme-picker-grid">
+                        <div class="theme-card active" data-theme-val="cyber">
+                            <div class="theme-swatch swatch-cyber"></div>
+                            <div class="theme-card-info">
+                                <strong>Cyber Neon</strong>
+                                <span>Cyan & Electric Blue</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-card" data-theme-val="ocean">
+                            <div class="theme-swatch swatch-ocean"></div>
+                            <div class="theme-card-info">
+                                <strong>Deep Ocean</strong>
+                                <span>Navy & Turquoise</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-card" data-theme-val="aurora">
+                            <div class="theme-swatch swatch-aurora"></div>
+                            <div class="theme-card-info">
+                                <strong>Midnight Aurora</strong>
+                                <span>Violet & Emerald</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-card" data-theme-val="solar">
+                            <div class="theme-swatch swatch-solar"></div>
+                            <div class="theme-card-info">
+                                <strong>Solar Amber</strong>
+                                <span>Golden Sun & Coral</span>
+                            </div>
+                        </div>
+
+                        <div class="theme-card" data-theme-val="frost">
+                            <div class="theme-swatch swatch-frost"></div>
+                            <div class="theme-card-info">
+                                <strong>Clean Frost Glass</strong>
+                                <span>Ultra-clean translucent</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Units of Measurement -->
+                <div class="customizer-section">
+                    <h4 class="customizer-heading"><span>📏</span> <span data-i18n="unitsTitle">Measurement Units</span></h4>
+                    
+                    <div class="customizer-row">
+                        <span class="customizer-label">Temperature:</span>
+                        <div class="toggle-button-group" id="unitTempGroup">
+                            <button class="toggle-pill active" data-unit="c">Celsius (°C)</button>
+                            <button class="toggle-pill" data-unit="f">Fahrenheit (°F)</button>
+                        </div>
+                    </div>
+
+                    <div class="customizer-row">
+                        <span class="customizer-label">Wind Speed:</span>
+                        <div class="toggle-button-group" id="unitWindGroup">
+                            <button class="toggle-pill active" data-unit="kmh">km/h</button>
+                            <button class="toggle-pill" data-unit="mph">mph</button>
+                            <button class="toggle-pill" data-unit="knots">knots</button>
+                        </div>
+                    </div>
+
+                    <div class="customizer-row">
+                        <span class="customizer-label">Pressure:</span>
+                        <div class="toggle-button-group" id="unitPressureGroup">
+                            <button class="toggle-pill active" data-unit="hpa">hPa (mbar)</button>
+                            <button class="toggle-pill" data-unit="inhg">inHg</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Favorite Locations Manager -->
+                <div class="customizer-section">
+                    <h4 class="customizer-heading"><span>⭐</span> <span data-i18n="favoriteCities">Favorite Locations</span></h4>
+                    <p class="customizer-desc">Pin quick cities for instant telemetry and radar access.</p>
+                    
+                    <div class="add-favorite-row">
+                        <input type="text" id="newFavoriteInput" placeholder="Add Indian city (e.g. Pune, Jaipur, Kochi)..." />
+                        <button class="btn-primary-sm" id="addFavoriteBtn">+ Add</button>
+                    </div>
+
+                    <div class="favorite-tags-list" id="favoriteCitiesList">
+                        <!-- Injected by app.js -->
+                    </div>
+                </div>
+
+                <!-- Default Persona Perspective -->
+                <div class="customizer-section">
+                    <h4 class="customizer-heading"><span>👥</span> Default Persona Perspective</h4>
+                    <div class="persona-chips-picker" id="defaultPersonaPicker">
+                        <button class="persona-chip-select active" data-persona="farmer">🌾 Agriculture (GKMS)</button>
+                        <button class="persona-chip-select" data-persona="aviation">✈️ Aviation (METAR)</button>
+                        <button class="persona-chip-select" data-persona="marine">⚓ Marine & Coastal</button>
+                        <button class="persona-chip-select" data-persona="smart_city">🏙️ Smart City Disaster</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" id="resetCustomizerBtn">Reset to Defaults</button>
+                <button class="btn-primary" id="saveCustomizerBtn">Save & Apply</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 2. AUTHENTICATION MODAL (SIGN IN / REGISTER / GUEST) -->
+    <div class="modal-overlay" id="authModal" aria-hidden="true" role="dialog" aria-labelledby="authModalTitle">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-title-icon">👤</span>
+                    <div>
+                        <h3 id="authModalTitle">Welcome to WeatherGPT</h3>
+                        <p class="modal-subtitle">Access personalized weather alerts, farming guides & telemetry</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="closeAuthModalBtn" aria-label="Close">&times;</button>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div class="auth-tabs-nav">
+                <button class="auth-tab active" data-tab="signin" id="authTabSignIn">Sign In</button>
+                <button class="auth-tab" data-tab="signup" id="authTabSignUp">Create Account</button>
+                <button class="auth-tab" data-tab="guest" id="authTabGuest">Instant Guest</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- SIGN IN FORM -->
+                <form id="signInForm" class="auth-form-panel active">
+                    <div class="form-group">
+                        <label for="signInEmail">Email or Username</label>
+                        <input type="text" id="signInEmail" placeholder="e.g. arun.kumar@gmail.com or officer_delhi" required autocomplete="username" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signInPassword">Password</label>
+                        <input type="password" id="signInPassword" placeholder="••••••••" required autocomplete="current-password" />
+                    </div>
+
+                    <div class="form-row-between">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMeCheckbox" checked />
+                            <span>Remember this device</span>
+                        </label>
+                        <a href="javascript:void(0)" class="text-link" onclick="alert('In prototype mode: you can use any username/password, or click Instant Guest!')">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn">Sign In to WeatherGPT</button>
+
+                    <div class="auth-divider"><span>OR</span></div>
+                    <button type="button" class="btn-guest-login" id="quickGuestLoginBtn">⚡ Continue as Guest (1-Click)</button>
+                </form>
+
+                <!-- SIGN UP FORM -->
+                <form id="signUpForm" class="auth-form-panel" style="display: none;">
+                    <div class="form-group">
+                        <label for="signUpFullName">Full Name</label>
+                        <input type="text" id="signUpFullName" placeholder="e.g. Dr. Arun Kumar" required autocomplete="name" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signUpEmail">Email Address</label>
+                        <input type="email" id="signUpEmail" placeholder="arun@example.com" required autocomplete="email" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signUpPassword">Password</label>
+                        <input type="password" id="signUpPassword" placeholder="Choose a secure password" required autocomplete="new-password" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signUpRole">Primary Role / Persona</label>
+                        <select id="signUpRole">
+                            <option value="Farmer">🌾 Farmer / Agriculture (GKMS)</option>
+                            <option value="Pilot">✈️ Pilot / Aviation Operations</option>
+                            <option value="Marine">⚓ Fisherman / Marine Operator</option>
+                            <option value="Disaster Officer">🏙️ Smart City / Disaster Management</option>
+                            <option value="Researcher">🔬 Meteorologist / Researcher</option>
+                            <option value="Citizen" selected>👤 General Citizen</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn">Create Free Account</button>
+                </form>
+
+                <!-- GUEST INFO PANEL -->
+                <div id="guestInfoPanel" class="auth-form-panel" style="display: none;">
+                    <div class="guest-card">
+                        <div class="guest-card-icon">⚡</div>
+                        <h4>Instant Guest Access</h4>
+                        <p>No password needed! Browse live Doppler radar, test AI queries, examine NWP models, and view disaster bulletins freely.</p>
+                        <button type="button" class="auth-submit-btn" id="confirmGuestBtn">Launch as Guest User</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 3. AI SETTINGS MODAL -->
+    <div class="modal-overlay" id="aiSettingsModal" aria-hidden="true" role="dialog" aria-labelledby="aiSettingsModalTitle">
+        <div class="modal-content" style="max-width: 540px;">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-title-icon">⚙️</span>
+                    <div>
+                        <h3 id="aiSettingsModalTitle">AI Model & Engine Settings</h3>
+                        <p class="modal-subtitle">Configure frontier models, custom API keys, and voice parameters</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="closeAiSettingsBtn" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="settings-info-box">
+                    WeatherGPT integrates <strong>7 Frontier AI Providers</strong>: Google Gemini, Groq, OpenAI, Anthropic Claude, DeepSeek, Mistral, and OpenRouter, plus an offline zero-latency <strong>MoES Met-Brain</strong>!
+                </div>
+
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="aiProviderSelect">AI MODEL PROVIDER</label>
+                        <select id="aiProviderSelect">
+                            <option value="builtin">🌐 Built-in MoES Brain (Offline & 100% Free)</option>
+                            <option value="groq">⚡ Groq Cloud (Qwen-3.8 27B / Ultra Fast)</option>
+                            <option value="gemini">✨ Google Gemini (Gemini 3.6 Flash)</option>
+                            <option value="openrouter">🔀 OpenRouter (Meta Llama 3.3 70B Universal)</option>
+                            <option value="openai">🧠 OpenAI (GPT-4o / GPT-4o-mini)</option>
+                            <option value="anthropic">🤖 Anthropic Claude (Claude 3.5 Sonnet)</option>
+                            <option value="deepseek">🔮 DeepSeek (DeepSeek-V3 / Chat)</option>
+                            <option value="mistral">🌊 Mistral AI (Mistral Small / Large)</option>
+                            <option value="ollama">🦙 Ollama Local (http://127.0.0.1:11434)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aiApiKeyInput">API KEY</label>
+                        <input type="password" id="aiApiKeyInput" placeholder="Enter API Key (optional if configured on server)..." />
+                        <div id="apiKeyHelpLink" class="form-help-text"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aiModelInput">CUSTOM MODEL NAME (OPTIONAL)</label>
+                        <input type="text" id="aiModelInput" placeholder="e.g. gemini-1.5-flash, llama-3.3-70b-versatile, gpt-4o-mini" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>AUDIO TEXT-TO-SPEECH (TTS) VOICE SPEED</label>
+                        <div class="slider-row">
+                            <span>0.75x</span>
+                            <input type="range" id="ttsRateSlider" min="0.7" max="1.3" step="0.1" value="1.0" />
+                            <span>1.3x</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelAiSettingsBtn" onclick="document.getElementById('aiSettingsModal').classList.remove('open')">Cancel</button>
+                <button id="saveAiSettingsBtn" class="btn-primary">Save & Activate</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 4. CYCLONE BULLETIN MODAL -->
+    <div class="modal-overlay" id="cycloneModal" aria-hidden="true" role="dialog" aria-labelledby="cycloneModalTitle">
+        <div class="modal-content" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-title-icon">🌀</span>
+                    <div>
+                        <h3 id="cycloneModalTitle">RSMC Tropical Cyclone Bulletin (IMD Official)</h3>
+                        <p class="modal-subtitle">Regional Specialized Meteorological Centre New Delhi</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="closeCycloneModalBtn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" style="font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+                <div class="cyclone-bulletin-badge-row">
+                    <span class="cyclone-bulletin-tag red">STAGE 4 WARNING</span>
+                    <span class="cyclone-bulletin-tag">SYSTEM ID: BOB-04/2026</span>
+                </div>
+                <p><strong>Storm Name:</strong> Severe Cyclonic Storm 'VARUNA'</p>
+                <p><strong>Current Coordinates:</strong> 18.2°N, 87.4°E (Bay of Bengal)</p>
+                <p><strong>Central Pressure:</strong> 978 hPa | <strong>Max Sustained Winds:</strong> 110 km/h gusting to 135 km/h</p>
+                <p><strong>Estimated Landfall:</strong> Between Puri and Dhamra Port (Odisha) in ~22 hours</p>
+                <hr style="margin: 14px 0; border: 0; border-top: 1px solid var(--border-subtle);"/>
+                <h4 style="color: var(--accent-red); margin-bottom: 8px;">Action Directives for District Disaster Authorities:</h4>
+                <ul style="margin-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+                    <li>Enforce complete suspension of fishing operations along Odisha and West Bengal coast.</li>
+                    <li>Mobilize evacuation for thatched dwelling residents within 5 km of shoreline.</li>
+                    <li>Pre-position NDRF and ODRAF disaster rescue teams with satellite communications.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="document.getElementById('cycloneModal').classList.remove('open')">Acknowledge</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 5. CLIMATE TRENDS MODAL (For backward-compatibility triggers) -->
+    <div class="modal-overlay" id="climateModal" aria-hidden="true" role="dialog">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-title-icon">📈</span>
+                    <div>
+                        <h3>50-Year Historical Climate Analysis (1975–2025)</h3>
+                    </div>
+                </div>
+                <button class="modal-close-btn" id="closeClimateModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Switching you to the full Climate Trends view...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <!-- SCRIPT IMPORTS (Cache-Busted v=3.2.0_drawer) -->
+    <script src="/static/js/i18n.js?v=3.2.0_drawer"></script>
+    <script src="/static/js/gis_map.js?v=3.2.0_drawer"></script>
+    <script src="/static/js/nwp_charts.js?v=3.2.0_drawer"></script>
+    <script src="/static/js/chat.js?v=3.2.0_drawer"></script>
+    <script src="/static/js/app.js?v=3.2.0_drawer"></script>
+
+</body>
+</html>
